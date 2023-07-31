@@ -1,0 +1,82 @@
+---
+title: "An visual example of collider bias"
+author: "Jitao David Zhang"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output:
+  html_document:
+    df_print: paged
+    theme: spacelab
+    mathjax: default
+    code_folding: hide
+    toc: true
+    toc_depth: 3
+    number_sections: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+  pdf_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
+editor_options: 
+  chunk_output_type: inline
+params:
+  echo: yes
+  relative: FALSE
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      fig.height=6, fig.width=6)
+library(ribiosUtils)
+library(ribiosIO)
+library(ribiosPlot)
+library(openxlsx)
+library(tidyverse)
+library(ggplot2)
+library(mgcv)
+theme_set(theme_light(base_size=13))
+```
+
+# Background
+
+This document demonstrates the a simple case of collider bias.
+
+# Executive summary
+
+Conditioning on a collider creates a spurious correlation.
+
+# Example
+
+```{r}
+set.seed(1887)
+rx <- rnorm(1000)
+ry <- rnorm(1000)
+rxy <- data.frame(x=rx, y=ry) %>%
+  mutate(filter=x>=0 | y >=0)
+```
+
+```{r corPlot, fig.height=5, fig.width=5}
+ggplot(rxy, aes(x=x, y=y, col=filter)) +
+  scale_color_manual(values=c("lightgray", "black"), name="Subset") +
+  theme(legend.position = "none") +
+  annotate("text",
+           x=0, y=3.5, 
+           label=sprintf("correlation (all): %1.2f\ncorrelation (filtered): %1.2f",
+                         cor(rx, ry),
+                         with(filter(rxy, filter), cor(x, y))),
+           hjust=0) +
+  geom_point()
+```
+
+# Session information
+
+```{r bedaInfo}
+bedaInfo()
+```
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+# Appendix
